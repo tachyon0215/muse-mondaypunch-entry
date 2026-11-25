@@ -10,6 +10,10 @@ The program is fully deterministic: the text is a constant, and there
 is no network access, randomness, or clock dependence.
 """
 
+# Entry note: a one-line Monday-morning joke written for the make.fun
+# "Monday Morning Punchlines" competition. The text is a fixed constant;
+# this script only validates it and writes it out verbatim as entry.txt.
+
 import os
 from pathlib import Path
 
