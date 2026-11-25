@@ -1,36 +1,56 @@
 #!/usr/bin/env python3
-"""Write the entry text to entry.txt.
+"""Emit the Monday Morning Punchlines entry as entry.txt.
 
-Entry for make.fun's "Monday Morning Punchlines": three Monday-morning
-lies - the alarm, the coffee pretending to work, and a meeting called a
-'quick sync' - counted up in the punchline: three lies before 9 a.m.,
-and I believed all of them.
-Deterministic: a fixed text, no network, no randomness, no clock.
+The joke stacks three small Monday-morning deceptions -- an alarm that
+goes off, coffee that only pretends to work, and a meeting disguised as
+a 'quick sync' -- then lands the count: three lies before 9 a.m., and
+the narrator believed every one of them.
+
+The program is fully deterministic: the text is a constant, and there
+is no network access, randomness, or clock dependence.
 """
+
 import os
 from pathlib import Path
 
-LINE = "Monday morning: my alarm goes off, my coffee pretends to work, and my first meeting is called a 'quick sync' - three lies before 9 a.m., and I believed all of them."
-TEXT = LINE + "\n"
-MAX_CHARS = 200
+# The entry is assembled from its three "lies" so the structure of the
+# joke stays visible in the source: setup, setup, then the counted payoff.
+OPENING = "Monday morning: "
+LIE_ONE = "my alarm goes off, "
+LIE_TWO = "my coffee pretends to work, "
+LIE_THREE = (
+    "and my first meeting is called a 'quick sync' - "
+    "three lies before 9 a.m., and I believed all of them."
+)
+ENTRY_LINE = OPENING + LIE_ONE + LIE_TWO + LIE_THREE
+
+CHAR_LIMIT = 200
+FALLBACK_DIR = "/output"
+TARGET_NAME = "entry.txt"
 
 
-def validate(text: str) -> None:
-    body = text[:-1] if text.endswith("\n") else text
-    if not (1 <= len(body) <= MAX_CHARS):
-        raise ValueError("entry length out of range")
-    if not body.strip():
-        raise ValueError("entry must not be only whitespace")
-    if "\n" in body or "\r" in body:
-        raise ValueError("entry must be a single line")
+def check_line(line: str) -> None:
+    """Guard the contest constraints: 1..200 chars on a single line."""
+    if len(line) < 1 or len(line) > CHAR_LIMIT:
+        raise ValueError("entry line length out of range")
+    if not line.strip():
+        raise ValueError("entry line must not be blank")
+    if "\n" in line or "\r" in line:
+        raise ValueError("entry must fit on one line")
 
 
-def main() -> None:
-    validate(TEXT)
-    out_dir = Path(os.environ.get("MAKEFUN_OUTPUT_DIR") or "/output")
-    out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "entry.txt").write_bytes(TEXT.encode("utf-8"))
+def destination() -> Path:
+    """Resolve the output directory, honouring MAKEFUN_OUTPUT_DIR."""
+    folder = Path(os.environ.get("MAKEFUN_OUTPUT_DIR") or FALLBACK_DIR)
+    folder.mkdir(parents=True, exist_ok=True)
+    return folder / TARGET_NAME
+
+
+def run() -> None:
+    check_line(ENTRY_LINE)
+    payload = (ENTRY_LINE + "\n").encode("utf-8")
+    destination().write_bytes(payload)
 
 
 if __name__ == "__main__":
-    main()
+    run()
